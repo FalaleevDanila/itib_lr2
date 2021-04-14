@@ -40,39 +40,48 @@ class NeuralActivation:
         answer_data = []
         w = [0]*(self.window_size + 1)
         epoch = 0
-        nj = 0.8
+        nj = 1
         p = self.window_size
         sum_error = 1
-        while epoch <= max_epochs and sum_error > 0.001:
+        while epoch <= max_epochs:
             sum_error = 0
             y_net = []
             for i in range(p, len(self.data), 1):
                 net = f_net(self.right_function_answer[i - p:i], w[1:], w[0])
                 y_net.append(net)
                 sigma = self.right_function_answer[i] - net
-                sum_error += sigma*sigma
-
                 for j in range(0, p):
                     w[j + 1] += sigma * nj * fun(self.right_function_answer[i - p + j])
+
+            for i in range(p, len(self.data), 1):
+                net = f_net(self.right_function_answer[i - p:i], w[1:], w[0])
+                sigma = self.right_function_answer[i] - net
+                sum_error += sigma * sigma
             sum_error **= 0.5
             answer_data.append([w, sum_error, y_net])
 
             # print(epoch, sum_error, w)
             epoch += 1
-        print('\n\n\nWINDOW SIZE = ', self.window_size, '\nEPOCHS = ', epoch - 1, '\n error = ', answer_data[-1][1], '\n'
+        print('\n\n\nWINDOW SIZE = ', self.window_size, '\nEPOCHS = ', epoch - 1, '\n error = ', answer_data[-1][1],
+              '\n'
               + ' weighs = ', answer_data[-1][0])
         self.print_answer(answer_data[-1], len(answer_data) - 1)
 
     def print_answer(self, answer_data, epochs):
         y = []
+        '''
+        
+        '''
         y_w = self.right_function_answer[:self.window_size]
-
+        error = 0
         for i in range(self.window_size, len(self.next_data)):
-            y_w.append(f_net(self.right_function_answer[i - self.window_size:i], answer_data[0][1:], answer_data[0][0]))
-
+            y_w.append(f_net(y_w[i - self.window_size:i], answer_data[0][1:], answer_data[0][0]))
+            sigma = self.right_function_answer[i] - f_net(y_w[i - self.window_size:i],
+                                                          answer_data[0][1:],
+                                                          answer_data[0][0])
+            error += sigma * sigma
         for i in self.next_data:
             y.append(fun(i))
-
         _, ax = plt.subplots()
         ax.plot(self.next_data, y, label='Реальная функция')
         ax.plot(self.next_data, y_w, label='Прогноз')
@@ -87,7 +96,7 @@ class NeuralActivation:
 
 if __name__ == '__main__':
     for i in range(0, 3):
-        n = NeuralActivation(6 + i)
-        n.go(500)
-        n.go(1000)
+        n = NeuralActivation(5 + i)
+        n.go(2000)
+        n.go(4000)
 
